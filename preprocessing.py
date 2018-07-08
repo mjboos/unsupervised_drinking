@@ -33,15 +33,15 @@ def load_data(preprocess=True):
     data = pd.read_csv('all_drinks.csv', encoding='utf-8')
 #    data.fillna('NAN', inplace=True)
     if preprocess:
-        data.iloc[:,data.columns.str.contains('Ingredient')] = data.iloc[:,data.columns.str.contains('Ingredient')].applymap(preprocess_ingredient)
+        data[['strIngredient{}'.format(i) for i in range(1,16)]] = data[['strIngredient{}'.format(i) for i in range(1,16)]].applymap(preprocess_ingredient)
         data.iloc[:,data.columns.str.contains('Measure')] = data.iloc[:,data.columns.str.contains('Measure')].applymap(preprocess_measure)
     return data
 
 def make_tokenizer_dict(data):
     ingredients = pd.Series(data[['strIngredient{}'.format(i) for i in range(1,16)]].values.flatten())
     ingredient_counts = ingredients.value_counts()
-    token_to_word = {0 : np.nan}
-    word_to_token = {np.nan : 0}
+    token_to_word = {0 : np.NaN}
+    word_to_token = {np.NaN : 0}
     for i, (ingredient, n) in enumerate(ingredient_counts.items()):
         token_to_word[i] = ingredient
         word_to_token[ingredient] = i
@@ -49,7 +49,7 @@ def make_tokenizer_dict(data):
 
 def tokenize_data(data):
     token2word, word2token = make_tokenizer_dict(data)
-    data.iloc[:,data.columns.str.contains('Ingredient')] = data.iloc[:,data.columns.str.contains('Ingredient')].applymap(lambda x : word2token[x])
+    data[['strIngredient{}'.format(i) for i in range(1,16)]] = data[['strIngredient{}'.format(i) for i in range(1,16)]].applymap(lambda x : word2token[x])
     return data, token2word, word2token
 
 list_of_alcohol = ['vodka', 'rum', 'whiskey', 'tequila', 'sambuca', 'curacao']
