@@ -10,6 +10,13 @@ import seaborn as sns
 
 sns.set_style('whitegrid')
 
+def mask_cocktails(included_ingredients, ingredients_vector):
+    cocktails_to_consider = np.logical_not(ingredients_vector[:,included_ingredients==0].any(axis=1))
+#    masked_recipes = np.ma.masked_array(ingredients_vector, np.tile(np.logical_not(included_ingredients)[None],(ingredients_vector.shape[0],1)))
+    masked_recipes = np.ma.masked_array(ingredients_vector, np.logical_or(np.logical_not(cocktails_to_consider)[:,None], np.tile(np.logical_not(included_ingredients)[None], (ingredients_vector.shape[0],1))))
+    return masked_recipes
+
+
 def stepwise_exclusion(included_ingredients, ingredients_vector):
     '''Finds the ingredient to exclude that leaves as much drink options as possible
     INPUT
@@ -17,9 +24,7 @@ def stepwise_exclusion(included_ingredients, ingredients_vector):
     ingredients_vector      -       binary array of shape (n_recipes,n), indicating which ingredients are necessary for a given recipe
     OUTPUT
     binary vector of length n with one less ingredient'''
-    cocktails_to_consider = np.logical_not(ingredients_vector[:,included_ingredients==0].any(axis=1))
-#    masked_recipes = np.ma.masked_array(ingredients_vector, np.tile(np.logical_not(included_ingredients)[None],(ingredients_vector.shape[0],1)))
-    masked_recipes = np.ma.masked_array(ingredients_vector, np.logical_or(np.logical_not(cocktails_to_consider)[:,None], np.tile(np.logical_not(included_ingredients)[None], (ingredients_vector.shape[0],1))))
+    masked_recipes = mask_cocktails(included_ingredients, ingredients_vector)
     ingredient_to_exclude = masked_recipes.sum(axis=0).argmin()
     new_included_ingredients = included_ingredients.copy()
     new_included_ingredients[ingredient_to_exclude] = 0
@@ -58,7 +63,7 @@ plt.xlabel('Ingredients excluded')
 plt.ylabel('Cocktail recipes')
 plt.close()
 
-ingredient_list_to_use = reduced_ingredients[-50]
-print('Uns bleiben {} Rezepte mit diesen Zutaten:'.format(cocktails_left[-50]))
+ingredient_list_to_use = reduced_ingredients[-80]
+print('Uns bleiben {} Rezepte mit diesen Zutaten:'.format(cocktails_left[-80]))
 print(mlb.classes_[np.where(ingredient_list_to_use)])
 
