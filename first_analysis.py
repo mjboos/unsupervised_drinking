@@ -45,6 +45,8 @@ ingredients_vector, mlb = pre.tokenize_data(drinks)
 
 included_ingredients = np.ones(ingredients_vector.shape[1])
 
+for excl_ingr in pre.exclude_by_hand:
+    included_ingredients[np.where(mlb.classes_==excl_ingr)[0]] = 0
 reduced_ingredients = [included_ingredients]
 cocktails_left = [ingredients_vector.shape[0]]
 excluded_cocktail = ['none']
@@ -66,4 +68,3 @@ plt.close()
 ingredient_list_to_use = reduced_ingredients[-80]
 print('Uns bleiben {} Rezepte mit diesen Zutaten:'.format(cocktails_left[-80]))
 print(mlb.classes_[np.where(ingredient_list_to_use)])
-

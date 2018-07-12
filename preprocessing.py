@@ -58,4 +58,17 @@ def tokenize_by_hand_data(data):
     data[['strIngredient{}'.format(i) for i in range(1,16)]] = data[['strIngredient{}'.format(i) for i in range(1,16)]].fillna(0).applymap(lambda x : word2token[x])
     return data, token2word, word2token
 
-list_of_alcohol = ['vodka', 'rum', 'whiskey', 'tequila', 'sambuca', 'curacao']
+def contains_juice(ingredient_vector):
+    pass
+
+def contains_cream(ingredient_vector):
+    pass
+
+def alcohol_content(ingredient_vector):
+    pass
+
+list_of_juices = ['banana', 'grenadine', 'lemon', 'lemon juice', 'lemon-lime soda', 'lemonade', 'lime', 'lime juice', 'pineapple juice']
+
+list_of_alcohol = ['vodka', 'amaretto', "bailey's irish cream", 'bitters', 'blended whiskey', 'blue curacao', 'bourbon', 'brandy', 'dark rum', 'dry vermouth', 'gin', 'kahlua']
+
+exclude_by_hand = ['apricot brandy', 'absolut citron', 'benedictine', 'angostura bitters', 'cherry brandy', 'galliano', 'grand marnier', 'maraschino liqueur', 'orange bitters', 'peach schnapps', 'sloe gin', 'sweet and sour', 'wild turkey', 'white creme de menthe'] 
