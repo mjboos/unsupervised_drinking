@@ -71,4 +71,4 @@ list_of_juices = ['banana', 'grenadine', 'lemon', 'lemon juice', 'lemon-lime sod
 
 list_of_alcohol = ['vodka', 'amaretto', "bailey's irish cream", 'bitters', 'blended whiskey', 'blue curacao', 'bourbon', 'brandy', 'dark rum', 'dry vermouth', 'gin', 'kahlua']
 
-exclude_by_hand = ['apricot brandy', 'absolut citron', 'benedictine', 'angostura bitters', 'cherry brandy', 'galliano', 'grand marnier', 'maraschino liqueur', 'orange bitters', 'peach schnapps', 'sloe gin', 'sweet and sour', 'wild turkey', 'white creme de menthe'] 
+exclude_by_hand = ['apricot brandy', 'absolut citron', 'benedictine', 'angostura bitters', 'cherry brandy', 'galliano', 'grand marnier', 'maraschino liqueur', 'orange bitters', 'peach schnapps', 'sloe gin', 'sweet and sour', 'wild turkey', 'white creme de menthe', 'bitters'] 

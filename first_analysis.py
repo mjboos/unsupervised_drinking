@@ -50,21 +50,21 @@ for excl_ingr in pre.exclude_by_hand:
 reduced_ingredients = [included_ingredients]
 cocktails_left = [ingredients_vector.shape[0]]
 excluded_cocktail = ['none']
-
-for i in range(ingredients_vector.shape[1]):
+n_ingredients = int(reduced_ingredients[0].sum())
+for i in range(n_ingredients):
     reduced_ingredients.append(stepwise_exclusion(reduced_ingredients[-1], ingredients_vector))
     cocktails_left.append(np.logical_not(ingredients_vector[:, reduced_ingredients[-1]==0].any(axis=1)).sum())
     excluded_cocktail.append(mlb.classes_[np.where(reduced_ingredients[-2]-reduced_ingredients[-1])])
 
 sns.set_style('white')
 fig, ax = plt.subplots(1,1,figsize=(10,5))
-ax.plot(np.arange(309),cocktails_left)
+ax.plot(np.arange(len(cocktails_left)),cocktails_left)
 #plt.xticks(np.arange(309), excluded_cocktail, rotation=90)
 fig.savefig('cocktails_per_ingredients_excluded.png')
 plt.xlabel('Ingredients excluded')
 plt.ylabel('Cocktail recipes')
 plt.close()
 
-ingredient_list_to_use = reduced_ingredients[-80]
-print('Uns bleiben {} Rezepte mit diesen Zutaten:'.format(cocktails_left[-80]))
+ingredient_list_to_use = reduced_ingredients[-50]
+print('Uns bleiben {} Rezepte mit diesen Zutaten:'.format(cocktails_left[-50]))
 print(mlb.classes_[np.where(ingredient_list_to_use)])
