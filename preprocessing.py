@@ -43,6 +43,19 @@ def tokenize_data(data):
     transformed_ingredients = mlb.fit_transform(ingredients_series)
     return transformed_ingredients, mlb
 
+def from_drinks_to_measure(drinks_df, ingredients_vector, mlb):
+    '''Expects the original (pre-processed) DataFrame drinks_df,
+    the ingredients_vector and MultiLabelBinarizer given by tokenize_data'''
+    measures = drinks_df[['strMeasure{}'.format(i) for i in range(1,16)]]
+    ingredient_in_df = drinks_df[['strIngredient{}'.format(i) for i in range(1,16)]]
+    list_of_transl_dicts = [dict(zip(ingredient_in_df.values[i], measures.values[i])) for i in range(drinks_df.shape[0])]
+    print(list_of_transl_dicts[0])
+    measure_vector = np.full(ingredients_vector.shape, '', dtype='object')
+    for i in range(measure_vector.shape[0]):
+        for j in np.where(ingredients_vector[i])[0]:
+            measure_vector[i,j] = list_of_transl_dicts[i][mlb.classes_[j]]
+    return measure_vector
+
 def make_tokenizer_dict(data):
     ingredients = pd.Series(data[['strIngredient{}'.format(i) for i in range(1,16)]].values.flatten())
     ingredient_counts = ingredients.value_counts()
