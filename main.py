@@ -10,7 +10,7 @@ import seaborn as sns
 from sklearn.manifold import LocallyLinearEmbedding, MDS, TSNE
 import bokeh.plotting as bpl
 from bokeh.themes import Theme
-
+from os.path import join, dirname
 def find_ingredient(ingredient, ingredient_names):
     import re
     ingr_ind = np.zeros(len(ingredient_names))
@@ -33,7 +33,7 @@ def flexible_load_defaults(ingredient_names, default_fn='default_ingredients.csv
     wild cards are allowed, e.g.
     *rum*
     to include all ingredients containing rum in their name (light rum, spiced rum etc)'''
-    ingredients = np.genfromtxt(default_fn, encoding='utf-8', dtype='str', delimiter=',')
+    ingredients = np.genfromtxt(join(dirname(__file__),default_fn), encoding='utf-8', dtype='str', delimiter=',')
     ingredients = [ingredient.strip() for ingredient in ingredients]
     print(ingredients)
     ingredient_indicator = np.zeros(len(ingredient_names))
@@ -69,16 +69,36 @@ def make_bokeh_plot(comps, recipe_names, description_strings):
         colors=colors,
         x=comps[:,0],
         y=comps[:,1],
-        desc=['<p><b><font size="3">'+rec+'</font></b></p>' for rec in recipe_names],
+        images=[join('unsupervised_cocktails','static','{}.jpg'.format(i)) for i in np.where(~masked_recipes.mask.all(axis=1))[0]],
+#        images=['<img src="randomcocktails/{0}.jpg" height="42" alt="{0}" width="42" style="float: left; margin: 0px 15px 15px 0px;" border="2"></img>'.format(i) for i in np.where(~masked_recipes.mask.all(axis=1))[0]],
+#        desc=['<p><b><font size="3">'+rec+'</font></b></p>' for rec in recipe_names],
+        desc = recipe_names,
         ingredients=description_strings
     ))
-
-    TOOLTIPS = [
+    TOOLTIPS = """
+        <div>
+            <div>
+                <img
+                    src="@images" height="42" alt="@images" width="42"
+                    style="float: left; margin: 0px 15px 15px 0px;"
+                    border="2"
+                ></img>
+            </div>
+            <div>
+                <span style="font-size: 17px; font-weight: bold;">@desc</span>
+            </div>
+            <div>
+                <span>@ingredients{safe}</span>
+            </div>
+        </div>
+    """
+#    TOOLTIPS = [
     #    ("index", "$index"),
     #    ("(x,y)", "($x, $y)"),
-        ("Cocktail", "@desc{safe}"),
-        ("Ingredients", "@ingredients{safe}")
-    ]
+#        ("Cocktail", "@desc{safe}"),
+#        ("","@images{safe}"),
+#        ("Ingredients", "@ingredients{safe}")
+#    ]
     p = bpl.figure(tools="reset,pan,wheel_zoom", tooltips=TOOLTIPS,
                title="Unsupervised Cocktails")
 
@@ -89,6 +109,12 @@ def make_bokeh_plot(comps, recipe_names, description_strings):
 color_list = np.array(('#d18096', '#483496', '#00FFD0', '#00FF00', '#3FE7C3'))
 
 drinks = pre.load_data()
+
+#remove stupid ingredients
+#exclude_these = np.vstack([drinks.apply(lambda x: word in x.values, axis=1) for word in pre.exclude_by_hand]).any(axis=0)
+#drinks = drinks.drop(drinks.index[np.where(exclude_these)[0]])
+print(drinks.shape)
+
 lblenc = LabelEncoder()
 alcohol_ind = lblenc.fit_transform(drinks['strAlcoholic'].values)
 color_values = color_list[alcohol_ind]
@@ -152,11 +178,11 @@ def update():
         desc=['<p><b><font size="3">'+rec+'</font></b></p>' for rec in recipe_names],
         ingredients=description_string)
     source.data = data_dict
+    print(mlb.classes_[~masked_recipes.mask.all(axis=0)])
 
 update_button = Button(label="Update")
 update_button.on_click(update)
-
 widget = widgetbox(update_button, checkbox_group)
 overall_layout = row(tsne_plot, widget)
-bpl.curdoc().theme = Theme("theme.yaml")
+bpl.curdoc().theme = Theme(join(dirname(__file__),"theme.yaml"))
 bpl.curdoc().add_root(overall_layout)

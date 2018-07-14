@@ -4,6 +4,7 @@ import pandas as pd
 from itertools import chain
 import numpy as np
 import re
+from os.path import join, dirname
 from sklearn.preprocessing import MultiLabelBinarizer
 
 #TODO: simple word preprocessing
@@ -30,7 +31,7 @@ def preprocess_measure(text):
     return text
 
 def load_data(preprocess=True):
-    data = pd.read_csv('all_drinks.csv', encoding='utf-8')
+    data = pd.read_csv(join(dirname(__file__), 'all_drinks.csv'), encoding='utf-8')
 #    data.fillna('NAN', inplace=True)
     if preprocess:
         data[['strIngredient{}'.format(i) for i in range(1,16)]] = data[['strIngredient{}'.format(i) for i in range(1,16)]].applymap(preprocess_ingredient)
@@ -84,4 +85,24 @@ list_of_juices = ['banana', 'grenadine', 'lemon', 'lemon juice', 'lemon-lime sod
 
 list_of_alcohol = ['vodka', 'amaretto', "bailey's irish cream", 'bitters', 'blended whiskey', 'blue curacao', 'bourbon', 'brandy', 'dark rum', 'dry vermouth', 'gin', 'kahlua']
 
-exclude_by_hand = ['apricot brandy', 'absolut citron', 'benedictine', 'angostura bitters', 'cherry brandy', 'galliano', 'grand marnier', 'maraschino liqueur', 'orange bitters', 'peach schnapps', 'sloe gin', 'sweet and sour', 'wild turkey', 'white creme de menthe', 'bitters'] 
+#exclude_by_hand = ['apricot brandy', 'absolut citron', 'benedictine', 'angostura bitters', 'cherry brandy', 'galliano', 'grand marnier', 'maraschino liqueur', 'orange bitters', 'peach schnapps', 'sloe gin', 'sweet and sour', 'wild turkey', 'white creme de menthe', 'bitters'] 
+
+exclude_by_hand = [u'7-up', u'absolut citron', u'absolut kurant', u'absolut peppar', u'advocaat', u'apricot brandy',
+ u'allspice', u'angelica root', u'angostura bitters', u'an\u0303ejo rum', 'aquavit', 'almond flavoring',
+ u'apple brandy', u'applejack', u'asafoetida', u'bacardi limon',
+ u'benedictine', u'bitters', u'black sambuca', u'blackberry brandy',
+ u'blackcurrant cordial', u'blackcurrant squash', u'blueberry schnapps',
+ u'butterscotch schnapps', u'cantaloupe', u'caramel coloring',
+ u'chambord raspberry liqueur', u'cherry grenadine', u'cherry heering',
+ u'cherry liqueur', u'coconut liqueur', u'creme de cassis', u'creme de mure',
+ u'crown royal', u'dark creme de cacao', u'demerara sugar', u'drambuie',
+ u'dubonnet rouge', u'erin cream', u'everclear', u'firewater',
+ u'food coloring', u'frangelico', u'fresca', u'galliano', u'glycerine',
+ u'godiva liqueur', u'grand marnier', u'half-and-half', u'hot damn', u'jello',
+ u'kool-aid', u'licorice root', u'lillet blanc', u'melon liqueur',
+ u'midori melon liqueur', u'mini-snickers bars', u'mountain dew',
+ u'oreo cookie', u'orgeat syrup', u'papaya', u'peach bitters', u'peach brandy',
+ u'peach vodka', u'peychaud bitters', u'pisang ambon', u'pisco', u'ricard',
+ u'rumple minze', u'sarsaparilla', u'schweppes russchian', u'sherbet',
+ u'sirup of roses', u'sloe gin', u'st. germain', u'surge', u'tia maria',
+ u'vanilla vodka', u'wormwood', u'yukon jack', u'zima']
