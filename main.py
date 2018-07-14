@@ -54,7 +54,7 @@ def mask_cocktails(included_ingredients, ingredients_vector):
 def make_description_string(masked_recipes, measures, ingredient_names):
     description_list = []
     for drink, rec in enumerate(masked_recipes[~masked_recipes.mask.all(axis=1)]):
-        drink_string = ''.join(['<br/> <strong>{0}</strong> -- {1}'.format(
+        drink_string = ''.join(['<br/> <strong>{0}</strong> - {1}'.format(
             ingredient_names[i], measures[~masked_recipes.mask.all(axis=1)][drink,i]) for i in np.where(rec)[0]])
         drink_string = '<p><font size="3">' + drink_string + '</font></p>'
         description_list.append(drink_string)
@@ -79,15 +79,17 @@ def make_bokeh_plot(comps, recipe_names, description_strings):
         <div>
             <div>
                 <img
-                    src="@images" height="42" alt="@images" width="42"
+                    src="@images" height="150" alt="@images" width="150"
                     style="float: left; margin: 0px 15px 15px 0px;"
                     border="2"
                 ></img>
             </div>
             <div>
+                <br>
                 <span style="font-size: 17px; font-weight: bold;">@desc</span>
             </div>
             <div>
+            <br>
                 <span>@ingredients{safe}</span>
             </div>
         </div>
@@ -175,8 +177,11 @@ def update():
         colors=colors,
         x=comps[:,0],
         y=comps[:,1],
-        desc=['<p><b><font size="3">'+rec+'</font></b></p>' for rec in recipe_names],
-        ingredients=description_string)
+        images=[join('unsupervised_cocktails','static','{}.jpg'.format(i)) for i in np.where(~masked_recipes.mask.all(axis=1))[0]],
+#        images=['<img src="randomcocktails/{0}.jpg" height="42" alt="{0}" width="42" style="float: left; margin: 0px 15px 15px 0px;" border="2"></img>'.format(i) for i in np.where(~masked_recipes.mask.all(axis=1))[0]],
+#        desc=['<p><b><font size="3">'+rec+'</font></b></p>' for rec in recipe_names],
+        desc = recipe_names,
+        ingredients=description_strings)
     source.data = data_dict
     print(mlb.classes_[~masked_recipes.mask.all(axis=0)])
 
