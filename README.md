@@ -1,5 +1,7 @@
 # Unsupervised Drinking
 
+![alt text](https://github.com/mjboos/unsupervised_drinking/usage.gif "Tasty...")
+
 This is a small bokeh app that solves the age old question: what should I drink next?
 It uses unsupervised learning ([t-SNE](https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding)) to show all cocktail recipes that are possible with the ingredients you have at home and lets you explore the mythical cocktail space (which is two dimensional, so you can actually see something).
 

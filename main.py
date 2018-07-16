@@ -38,15 +38,11 @@ def mask_cocktails(included_ingredients, ingredients_vector):
 def make_description_string(masked_recipes, measures, ingredient_names):
     description_list = []
     for drink, rec in enumerate(masked_recipes[~masked_recipes.mask.all(axis=1)]):
-        drink_string = ''.join(['<br/> <strong>{0}</strong> - {1}'.format(
+        drink_string = u''.join([u'<br/> <strong>{0}</strong> - {1}'.format(
             ingredient_names[i], measures[~masked_recipes.mask.all(axis=1)][drink, i]) for i in np.where(rec)[0]])
-        drink_string = '<p><font size="3">' + drink_string + '</font></p>'
+        drink_string = u'<p><font size="3">' + drink_string + u'</font></p>'
         description_list.append(drink_string)
     return description_list
-
-
-def make_description_without_measure_string(masked_recipes, ingredient_names):
-    return ['<br/>'.join(ingredient_names[np.where(rec)[0]]) for rec in masked_recipes[~masked_recipes.mask.all(axis=1)]]
 
 
 def make_bokeh_plot(comps, recipe_names, description_strings):
