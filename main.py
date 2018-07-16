@@ -1,21 +1,23 @@
-from __future__ import division
-from json import loads
 import pandas as pd
 import numpy as np
 import preprocessing as pre
-from sklearn.preprocessing import MultiLabelBinarizer, LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 from sklearn.manifold import TSNE
 import bokeh.plotting as bpl
 from bokeh.themes import Theme
 from os.path import join, dirname
+from bokeh.models.widgets import CheckboxGroup, Button, Select
+from bokeh.layouts import widgetbox, row
+
 
 def find_ingredient(ingredient, ingredient_names):
     '''This can be edited to allow wildcards for ingredients'''
     return ingredient_names == ingredient
 
+
 def load_defaults(ingredient_names, default_fn='default_ingredients.csv'):
     '''Loads default ingredients from csv'''
-    ingredients = np.genfromtxt(join(dirname(__file__),default_fn), encoding='utf-8', dtype='str', delimiter=',')
+    ingredients = np.genfromtxt(join(dirname(__file__), default_fn), encoding='utf-8', dtype='str', delimiter=',')
     ingredients = [ingredient.strip() for ingredient in ingredients]
     ingredient_indicator = np.zeros(len(ingredient_names))
     for ingredient in ingredients:
@@ -26,31 +28,35 @@ def load_defaults(ingredient_names, default_fn='default_ingredients.csv'):
             continue
     return ingredient_indicator
 
+
 def mask_cocktails(included_ingredients, ingredients_vector):
-    cocktails_to_consider = np.logical_not(ingredients_vector[:,included_ingredients==0].any(axis=1))
-    masked_recipes = np.ma.masked_array(ingredients_vector, np.logical_or(np.logical_not(cocktails_to_consider)[:,None], np.tile(np.logical_not(included_ingredients)[None], (ingredients_vector.shape[0],1))))
+    cocktails_to_consider = np.logical_not(ingredients_vector[:, included_ingredients == 0].any(axis=1))
+    masked_recipes = np.ma.masked_array(ingredients_vector, np.logical_or(np.logical_not(cocktails_to_consider)[:, None], np.tile(np.logical_not(included_ingredients)[None], (ingredients_vector.shape[0], 1))))
     return masked_recipes
+
 
 def make_description_string(masked_recipes, measures, ingredient_names):
     description_list = []
     for drink, rec in enumerate(masked_recipes[~masked_recipes.mask.all(axis=1)]):
         drink_string = ''.join(['<br/> <strong>{0}</strong> - {1}'.format(
-            ingredient_names[i], measures[~masked_recipes.mask.all(axis=1)][drink,i]) for i in np.where(rec)[0]])
+            ingredient_names[i], measures[~masked_recipes.mask.all(axis=1)][drink, i]) for i in np.where(rec)[0]])
         drink_string = '<p><font size="3">' + drink_string + '</font></p>'
         description_list.append(drink_string)
     return description_list
 
+
 def make_description_without_measure_string(masked_recipes, ingredient_names):
     return ['<br/>'.join(ingredient_names[np.where(rec)[0]]) for rec in masked_recipes[~masked_recipes.mask.all(axis=1)]]
 
+
 def make_bokeh_plot(comps, recipe_names, description_strings):
     colors = color_values[~masked_recipes.mask.all(axis=1)]
-    data_source=dict(
+    data_source = dict(
             colors=colors,
-            x=comps[:,0],
-            y=comps[:,1],
+            x=comps[:, 0],
+            y=comps[:, 1],
             images=[picture_urls[i] for i in np.where(~masked_recipes.mask.all(axis=1))[0]],
-            desc = recipe_names,
+            desc=recipe_names,
             labels=alcohol_names[~masked_recipes.mask.all(axis=1)],
             ingredients=description_strings
         )
@@ -85,6 +91,7 @@ def make_bokeh_plot(comps, recipe_names, description_strings):
     p.legend.location = "top_left"
     return p, source
 
+
 color_list = np.array(('#03ed3a', '#e9000b', '#8a2be2', '#00d7ff', '#ffc400'))
 
 drinks = pre.load_data()
@@ -93,7 +100,7 @@ lblenc = LabelEncoder()
 alcohol_ind = lblenc.fit_transform(drinks['strAlcoholic'].values)
 alcohol_names = drinks['strAlcoholic'].values
 color_values = color_list[alcohol_ind]
-ingredients = pd.Series(drinks[['strIngredient{}'.format(i) for i in range(1,16)]].values.flatten())
+ingredients = pd.Series(drinks[['strIngredient{}'.format(i) for i in range(1, 16)]].values.flatten())
 ingredient_counts = ingredients.value_counts()
 ingredients_vector, mlb = pre.tokenize_data(drinks)
 measure_vector = pre.from_drinks_to_measure(drinks, ingredients_vector, mlb)
@@ -103,21 +110,21 @@ ingredient_names = np.array([ingredient.lower() for ingredient in mlb.classes_])
 # load default cocktail ingredients
 included_ingredients = load_defaults(ingredient_names)
 
+
 def get_masked_recipes_and_names(included_ingredients, ingredients_vector):
     masked_recipes = mask_cocktails(included_ingredients, ingredients_vector)
     selected_recipes = np.logical_not(masked_recipes.mask.all(axis=1))
     recipe_names = drinks['strDrink'].iloc[selected_recipes].values
     return masked_recipes, recipe_names
 
+
 def make_tsne(masked_recipes, ingredient_names, recipe_names, perplexity=20, early_exaggeration=20, init='pca', random_state=1, **kwargs):
     # perplexity smaller than number of samples gives bad results
     tsne = TSNE(n_components=2, early_exaggeration=early_exaggeration, perplexity=min(perplexity, (~masked_recipes.mask.all(axis=1)).sum()/5), init=init, random_state=random_state)
-    comps = tsne.fit_transform(masked_recipes[~masked_recipes.mask.all(axis=1)][:,~masked_recipes.mask.all(axis=0)])
+    comps = tsne.fit_transform(masked_recipes[~masked_recipes.mask.all(axis=1)][:, ~masked_recipes.mask.all(axis=0)])
     description_string = make_description_string(masked_recipes, measure_vector, ingredient_names)
     return comps, description_string
 
-from bokeh.models.widgets import CheckboxGroup, Button, Select
-from bokeh.layouts import widgetbox, row, layout, column
 
 bpl.output_file("unsupervised_drinking.html")
 
@@ -130,17 +137,20 @@ comps, description_string = make_tsne(masked_recipes, ingredient_names, recipe_n
 
 tsne_plot, source = make_bokeh_plot(comps, recipe_names, description_string)
 
+
 def show_selected_cocktail(attrname, old, new):
-    find_cocktail = np.where(source.data['desc']==new)[0]
-    marker = tsne_plot.select_one({'name' : 'marker'})
+    find_cocktail = np.where(source.data['desc'] == new)[0]
+    marker = tsne_plot.select_one({'name': 'marker'})
     try:
         tsne_plot.renderers.remove(marker)
     except ValueError:
         pass
     tsne_plot.x(source.data['x'][find_cocktail], source.data['y'][find_cocktail], color='white', size=20, name='marker', line_width=2)
 
+
 select = Select(title='Highlighted recipe', options=recipe_names.tolist())
 select.on_change('value', show_selected_cocktail)
+
 
 def update():
     '''Updates t-SNE plot'''
@@ -149,23 +159,24 @@ def update():
     masked_recipes, recipe_names = get_masked_recipes_and_names(new_included_ingredients, ingredients_vector)
     comps, description_string = make_tsne(masked_recipes, ingredient_names, recipe_names)
     colors = color_values[~masked_recipes.mask.all(axis=1)]
-    data_dict=dict(
+    data_dict = dict(
         colors=colors,
-        x=comps[:,0],
-        y=comps[:,1],
+        x=comps[:, 0],
+        y=comps[:, 1],
         labels=alcohol_names[~masked_recipes.mask.all(axis=1)],
         images=[picture_urls[i] for i in np.where(~masked_recipes.mask.all(axis=1))[0]],
-        desc = recipe_names,
+        desc=recipe_names,
         ingredients=description_string)
     try:
-        tsne_plot.renderers.remove(tsne_plot.select_one({'name':'marker'}))
+        tsne_plot.renderers.remove(tsne_plot.select_one({'name': 'marker'}))
     except ValueError:
         pass
     source.data = data_dict
     select.options = recipe_names.tolist()
     new_selection = select.value if select.value in recipe_names else None
     if new_selection:
-        show_selected_cocktail(None,None,new_selection)
+        show_selected_cocktail(None, None, new_selection)
+
 
 update_button = Button(label="Update")
 update_button.on_click(update)
