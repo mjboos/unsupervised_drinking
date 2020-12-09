@@ -33,7 +33,7 @@ def load_data(preprocess=True):
     data = pd.read_csv(join(dirname(__file__), 'all_drinks.csv'), encoding='utf-8')
     if preprocess:
         data[['strIngredient{}'.format(i) for i in range(1, 16)]] = data[['strIngredient{}'.format(i) for i in range(1, 16)]].applymap(preprocess_ingredient)
-        data.iloc[:, data.columns.str.contains('Measure')] = data.iloc[:, data.columns.str.contains('Measure')].applymap(preprocess_measure)
+        data.loc[:, data.columns.str.contains('Measure')] = data.loc[:, data.columns.str.contains('Measure')].applymap(preprocess_measure)
     return data
 
 
